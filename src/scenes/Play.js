@@ -129,6 +129,9 @@ class Play extends Phaser.Scene {
 
         // update points for ship destroyed
         this.p1score += ship.points;
-        this.scoreLeft.text = this.p1score;      
+        this.scoreLeft.text = this.p1score;    
+        
+        // play explosion sound
+        this.sound.play('sfx_explosion');
     }
 }
