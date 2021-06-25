@@ -1,7 +1,7 @@
 // Victor Derbier
 // vderbier@ucsc.edu
 // UCSC Summer 2021
-// CMPM 120
+// CMPM 120 Rocket Patrol Mod
 
 // All of the code for this project is from Nathan Altice.
 
