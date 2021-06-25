@@ -67,7 +67,7 @@ class Play extends Phaser.Scene {
 
         // 60 seconds play clock
         scoreConfig.fixedWidth = 0; 
-        this.clock = this.time.delayedCall(1000, () => {
+        this.clock = this.time.delayedCall(60000, () => {
             this.add.text(game.config.width/2, game.config.height/2, "GAME OVER", scoreConfig).setOrigin(0, 0);
             this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart', scoreConfig).setOrigin(0.5);
             this.gameOver = true;  // To know when to stop the game.
@@ -75,6 +75,11 @@ class Play extends Phaser.Scene {
     }
 
     update() {
+        // check key input for restart
+        if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)) {
+            this.scene.restart();
+        }
+
         this.starfield.tilePositionX -= 4;
         if (!this.gameOver) {      // stop updating once time is up
             this.p1Rocket.update();
