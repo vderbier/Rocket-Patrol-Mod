@@ -1,3 +1,10 @@
+// Victor Derbier
+// vderbier@ucsc.edu
+// UCSC Summer 2021
+// CMPM 120
+
+// All of the code for this project is from Nathan Altice.
+
 let config = {
     type: Phaser.CANVAS,
     width: 640,
