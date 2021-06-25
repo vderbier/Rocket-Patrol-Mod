@@ -10,6 +10,8 @@ class Play extends Phaser.Scene {
         this.load.image('starfield', './assets/starfield.png');
         // load spritesheet
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
+        // load particle
+        this.load.image('fire', './assets/muzzleflash3.png');
     }
 
     create() {
@@ -72,6 +74,9 @@ class Play extends Phaser.Scene {
             this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for Menu', scoreConfig).setOrigin(0.5);
             this.gameOver = true;
         }, null, this);
+
+        // make particle effect
+        this.particles = this.add.particles('fire');
     }
 
     update() {
@@ -130,6 +135,27 @@ class Play extends Phaser.Scene {
             ship.alpha = 1;                       // make ship visible again
             boom.destroy();                       // remove explosion sprite
         }); 
+        
+        // Make a particle effect where the ship died
+        this.particles.createEmitter({
+            alpha: {start: 0.7, end: 0},
+            scale: {start: 0.5, end: 1.5},
+            speed: 20,
+            accelerationY: -120,
+            angle: {min: -85, max: -95},
+            rotate: {min: -180, max: 180},
+            lifespan: 700,//{min: 1000, max: 1000},
+            blendMode:'ADD',
+            frequency: 110,
+            maxParticles: 7,
+            x: ship.x + ship.width/2,
+            y: ship.y + ship.height/2// x and y.
+        });
+
+        // setTimeout(() => {
+        //     ship.reset();                         // reset ship position
+        //     ship.alpha = 1;                       // make ship visible again
+        // }, 1500);                         // delay respawn for 1.5 sec for the explosion to finish.
 
         // update points for ship destroyed
         this.p1score += ship.points;
