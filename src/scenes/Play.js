@@ -67,13 +67,20 @@ class Play extends Phaser.Scene {
         // GAME OVER flag
         this.gameOver = false;
 
+        this.timer = game.settings.gameTimer; // 
+        console.log(this.timer);
         // 60 seconds play clock
         scoreConfig.fixedWidth = 0; 
-        this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
-            this.add.text(game.config.width/2, game.config.height/2, "GAME OVER", scoreConfig).setOrigin(0.5);
-            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for Menu', scoreConfig).setOrigin(0.5);
-            this.gameOver = true;
-        }, null, this);
+        this.clock = setInterval(() => {
+            this.timer -= 1000; // minus 1 every second.
+            console.log(this.timer);
+            if (this.timer <= 0) {
+                clearInterval(this.clock);
+                this.add.text(game.config.width/2, game.config.height/2, "GAME OVER", scoreConfig).setOrigin(0.5);
+                this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for Menu', scoreConfig).setOrigin(0.5);
+                this.gameOver = true;
+            }
+        }, 1000);
 
         // make particle effect
         this.particles = this.add.particles('fire');
@@ -125,6 +132,9 @@ class Play extends Phaser.Scene {
     }
 
     shipExplode(ship) {
+        // add time (4 seconds).
+        this.timer += 2000;
+
         // temporarily hide ship
         ship.alpha = 0;
         // create explosion sprite at ship's position
