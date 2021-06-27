@@ -62,7 +62,12 @@ class Play extends Phaser.Scene {
             },
             fixedWidth: 100
         } 
+        // score
         this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding * 2, this.p1score, scoreConfig);
+        console.log(borderUISize + borderPadding);
+        // time left in MILIseconds.
+        console.log(game.config.width - borderUISize + borderPadding);
+       this.timeLeft = this.add.text(game.config.width - (borderUISize + borderPadding*2)*3, borderUISize + borderPadding * 2, this.game.settings.gameTimer/1000, scoreConfig);
 
         // GAME OVER flag
         this.gameOver = false;
@@ -73,6 +78,7 @@ class Play extends Phaser.Scene {
         scoreConfig.fixedWidth = 0; 
         this.clock = setInterval(() => {
             this.timer -= 1000; // minus 1 every second.
+            this.timeLeft.text = this.timer/1000;
             console.log(this.timer);
             if (this.timer <= 0) {
                 clearInterval(this.clock);
@@ -133,7 +139,7 @@ class Play extends Phaser.Scene {
 
     shipExplode(ship) {
         // add time (4 seconds).
-        this.timer += 2000;
+        this.timer += 4000;
 
         // temporarily hide ship
         ship.alpha = 0;
