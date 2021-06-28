@@ -26,18 +26,44 @@ class Play extends Phaser.Scene {
         this.add.rectangle(0, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
         this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
 
+        // common restart key
+        keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+        
+        // define p1 keys
+        let p1KeyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
+        let p1KeyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
+        let p1KeyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+        // define p2 keys
+        let p2KeyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+        let p2KeyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        let p2KeyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+
+
         // add rocket (p1)
-        this.p1Rocket = new Rocket(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket').setOrigin(0.5, 0);
+        this.rockets = new Array();
+        this.rockets.push(new Rocket(
+            this,
+            game.config.width/4, 
+            game.config.height - borderUISize - borderPadding,
+            'rocket',
+            p1KeyF,
+            p1KeyLEFT,
+            p1KeyRIGHT
+            ).setOrigin(0.5, 0));
+        this.rockets.push( new Rocket(
+            this,
+            3 * game.config.width/4, 
+            game.config.height - borderUISize - borderPadding, 
+            'rocket', 
+            p2KeyF, 
+            p2KeyLEFT, 
+            p2KeyRIGHT
+            ).setOrigin(0.5, 0));
+            
         // add spaceships (x3)
         this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0);
         this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'spaceship', 0, 20).setOrigin(0,0);
         this.ship03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'spaceship', 0, 10).setOrigin(0,0);
-        
-        // define keys
-        keyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
-        keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
-        keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
-        keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
 
         // animation config
         this.anims.create({
@@ -65,14 +91,15 @@ class Play extends Phaser.Scene {
         // score
         this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding * 2, this.p1score, scoreConfig);
         console.log(borderUISize + borderPadding);
-        // time left in MILIseconds.
+
+        // time left in seconds.
         console.log(game.config.width - borderUISize + borderPadding);
-       this.timeLeft = this.add.text(game.config.width - (borderUISize + borderPadding*2)*3, borderUISize + borderPadding * 2, this.game.settings.gameTimer/1000, scoreConfig);
+        this.timeLeft = this.add.text(game.config.width - (borderUISize + borderPadding*2)*3, borderUISize + borderPadding * 2, this.game.settings.gameTimer/1000, scoreConfig);
 
         // GAME OVER flag
         this.gameOver = false;
 
-        this.timer = game.settings.gameTimer; // 
+        this.timer = game.settings.gameTimer;
         console.log(this.timer);
         // 60 seconds play clock
         scoreConfig.fixedWidth = 0; 
@@ -104,26 +131,34 @@ class Play extends Phaser.Scene {
 
         this.starfield.tilePositionX -= 4;
         if (!this.gameOver) {      // stop updating once time is up
-            this.p1Rocket.update();
+            this.rockets[0].update();
+            this.rockets[1].update(); 
             this.ship01.update();
             this.ship02.update();
             this.ship03.update();
         }
 
         // check collisions
-        if (this.checkCollision(this.p1Rocket, this.ship03)) {
-            this.p1Rocket.reset();
-            this.shipExplode(this.ship03);
-        }
+        for (var i = 0; i < this.rockets.length; i++) {
+            if (this.checkCollision(this.rockets[i], this.ship03)) {
+                this.rockets[i].reset();
+                this.ship03.shipExplode();
+                // update points for ship destroyed
+                this.p1score += this.ship03.points;
+            }
 
-        if (this.checkCollision(this.p1Rocket, this.ship02)) {
-            this.p1Rocket.reset();   
-            this.shipExplode(this.ship02);    
-        }
+            if (this.checkCollision(this.rockets[i], this.ship02)) {
+                this.rockets[i].reset();   
+                this.ship02.shipExplode(); 
+                this.p1score += this.ship02.points;   
+            }
 
-        if (this.checkCollision(this.p1Rocket, this.ship01)) {
-            this.p1Rocket.reset(); 
-            this.shipExplode(this.ship01);
+            if (this.checkCollision(this.rockets[i], this.ship01)) {
+                this.rockets[i].reset(); 
+                this.ship01.shipExplode();
+                this.p1score += this.ship01.points;
+            }
+            this.scoreLeft.text = this.p1score;  
         }
     }
 
@@ -137,47 +172,47 @@ class Play extends Phaser.Scene {
         return false;
     }
 
-    shipExplode(ship) {
-        // add time (4 seconds).
-        this.timer += 4000;
+    // shipExplode(ship) {
+    //     // add time (4 seconds).
+    //     this.timer += 4000;
 
-        // temporarily hide ship
-        ship.alpha = 0;
-        // create explosion sprite at ship's position
-        let boom = this.add.sprite(ship.x, ship.y, 'explosion').setOrigin(0, 0);
-        boom.anims.play('explode');             // play explode animation
-        boom.on('animationcomplete', () => {    // callback after anim completes
-            ship.reset();                         // reset ship position
-            ship.alpha = 1;                       // make ship visible again
-            boom.destroy();                       // remove explosion sprite
-        }); 
+    //     // temporarily hide ship
+    //     ship.alpha = 0;
+    //     // create explosion sprite at ship's position
+    //     let boom = this.add.sprite(ship.x, ship.y, 'explosion').setOrigin(0, 0);
+    //     boom.anims.play('explode');             // play explode animation
+    //     boom.on('animationcomplete', () => {    // callback after anim completes
+    //         ship.reset();                         // reset ship position
+    //         ship.alpha = 1;                       // make ship visible again
+    //         boom.destroy();                       // remove explosion sprite
+    //     }); 
         
-        // Make a particle effect where the ship died
-        this.particles.createEmitter({
-            alpha: {start: 0.7, end: 0},
-            scale: {start: 0.5, end: 1.5},
-            speed: 20,
-            accelerationY: -120,
-            angle: {min: -85, max: -95},
-            rotate: {min: -180, max: 180},
-            lifespan: 700,//{min: 1000, max: 1000},
-            blendMode:'ADD',
-            frequency: 110,
-            maxParticles: 7,
-            x: ship.x + ship.width/2,
-            y: ship.y + ship.height/2// x and y.
-        });
+    //     // Make a particle effect where the ship died
+    //     this.particles.createEmitter({
+    //         alpha: {start: 0.7, end: 0},
+    //         scale: {start: 0.5, end: 1.5},
+    //         speed: 20,
+    //         accelerationY: -120,
+    //         angle: {min: -85, max: -95},
+    //         rotate: {min: -180, max: 180},
+    //         lifespan: 700,//{min: 1000, max: 1000},
+    //         blendMode:'ADD',
+    //         frequency: 110,
+    //         maxParticles: 7,
+    //         x: ship.x + ship.width/2,
+    //         y: ship.y + ship.height/2// x and y.
+    //     });
 
-        // setTimeout(() => {
-        //     ship.reset();                         // reset ship position
-        //     ship.alpha = 1;                       // make ship visible again
-        // }, 1500);                         // delay respawn for 1.5 sec for the explosion to finish.
+    //     // setTimeout(() => {
+    //     //     ship.reset();                         // reset ship position
+    //     //     ship.alpha = 1;                       // make ship visible again
+    //     // }, 1500);                         // delay respawn for 1.5 sec for the explosion to finish.
 
-        // update points for ship destroyed
-        this.p1score += ship.points;
-        this.scoreLeft.text = this.p1score;    
+    //     // update points for ship destroyed
+    //     this.p1score += ship.points;
+    //     this.scoreLeft.text = this.p1score;    
         
-        // play explosion sound
-        this.sound.play('sfx_explosion');
-    }
+    //     // play explosion sound
+    //     this.sound.play('sfx_explosion');
+    // }
 }
