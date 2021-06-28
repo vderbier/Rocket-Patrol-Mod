@@ -43,23 +43,27 @@ class Play extends Phaser.Scene {
         this.rockets = new Array();
         this.rockets.push(new Rocket(
             this,
-            game.config.width/4, 
+            game.settings.isCoop ? game.config.width/4 : game.config.width/2,  // place it in the middle if not coop or at a quarter of the screen if coop.
             game.config.height - borderUISize - borderPadding,
             'rocket',
             p1KeyF,
             p1KeyLEFT,
             p1KeyRIGHT
             ).setOrigin(0.5, 0));
-        this.rockets.push( new Rocket(
-            this,
-            3 * game.config.width/4, 
-            game.config.height - borderUISize - borderPadding, 
-            'rocket', 
-            p2KeyF, 
-            p2KeyLEFT, 
-            p2KeyRIGHT
-            ).setOrigin(0.5, 0));
             
+        // add rocket (p2) if coop 
+        if (this.game.settings.isCoop) {    
+            this.rockets.push( new Rocket(
+                this,
+                3 * game.config.width/4, 
+                game.config.height - borderUISize - borderPadding, 
+                'rocket', 
+                p2KeyF, 
+                p2KeyLEFT, 
+                p2KeyRIGHT
+                ).setOrigin(0.5, 0));
+        }
+
         // add spaceships (x3)
         this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0);
         this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'spaceship', 0, 20).setOrigin(0,0);
@@ -94,7 +98,7 @@ class Play extends Phaser.Scene {
 
         // time left in seconds.
         console.log(game.config.width - borderUISize + borderPadding);
-        this.timeLeft = this.add.text(game.config.width - (borderUISize + borderPadding*2)*3, borderUISize + borderPadding * 2, this.game.settings.gameTimer/1000, scoreConfig);
+        this.timeLeft = this.add.text(game.config.width - (borderUISize + borderPadding*2)*3, borderUISize + borderPadding * 2, game.settings.gameTimer/1000, scoreConfig);
 
         // GAME OVER flag
         this.gameOver = false;
@@ -131,8 +135,9 @@ class Play extends Phaser.Scene {
 
         this.starfield.tilePositionX -= 4;
         if (!this.gameOver) {      // stop updating once time is up
-            this.rockets[0].update();
-            this.rockets[1].update(); 
+            for (var i = 0; i < this.rockets.length; i++) {
+                this.rockets[i].update();
+            }
             this.ship01.update();
             this.ship02.update();
             this.ship03.update();
