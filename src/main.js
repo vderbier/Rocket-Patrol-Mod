@@ -3,8 +3,7 @@
 // UCSC Summer 2021
 // CMPM 120 Rocket Patrol Mod
 
-// All of the code for this project is from Nathan Altice.
-
+// Code modified from Nathan Altice's tutorial
 let config = {
     type: Phaser.CANVAS,
     width: 640,
