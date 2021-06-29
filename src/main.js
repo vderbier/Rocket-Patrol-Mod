@@ -5,6 +5,7 @@
 // June 28th 2021
 
 // Points breakdown:
+//
 // 20 - Finishing the tutorial
 // 20 - particle effect when a spaceship is hit
 // 20 - adds 4 seconds to the clock when a spaceship is hit
